@@ -1,4 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { initializeClient } from "../init";
 
 interface PromptRequestBody {
     prompt: string;
@@ -38,17 +39,17 @@ if (!body?.prompt) {
 
     const { projectClient, thread, agent } = await initializeClient();
 
-    const message = await projectClient.agents.createMessage({
-        threadId: thread.id,
-        role: "user",
-        content: prompt
+    const message = await projectClient.agents.createMessage(
+        thread.id,
+        {role: "user",
+        content: body?.prompt
     });
     context.log(`Created message, message ID: ${message.id}`);
 
-    let run = await projectClient.agents.createRun({
-        threadId: thread.id,
-        assistantId: agent.id
-    });
+    let run = await projectClient.agents.createRun(
+        thread.id,
+        agent.id
+    );
 
     while (["queued", "in_progress", "requires_action"].includes(run.status)) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -61,18 +62,21 @@ if (!body?.prompt) {
         context.error(`Run failed: ${run.lastError}`);
     }
 
-    const messages = await projectClient.agents.getMessages(thread.id);
+    const { data: messages } = await projectClient.agents.listMessages(thread.id);
+
     const lastMessage = messages.find((msg:any) => msg.sender === "assistant");
 
+    let lastMessageContent: string="";
     if (lastMessage) {
-        context.log(`Last Message: ${lastMessage.text?.value}`);
+        lastMessageContent = lastMessage.content.join(", ");
+        context.log(`Last Message: ${lastMessageContent}`);
     }
 
     await projectClient.agents.deleteAgent(agent.id);
     context.log("Deleted agent");
 
 
-    return { body: lastMessage?.text?.value || "No response from the assistant." };
+    return { body: lastMessageContent || "No response from the assistant." };
 };
 
 app.http('httpTrigger1', {

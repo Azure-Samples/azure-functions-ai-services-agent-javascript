@@ -24,11 +24,13 @@ export async function initializeClient() {
         model, {
         name: "azure-function-agent-get-weather",
         instructions: "You are a helpful support agent. Answer the user's questions to the best of your ability.",
-        headers: { "x-ms-enable-preview": "true" },
+        requestOptions: {
+            headers: { "x-ms-enable-preview": "true" }
+        },
         tools: [
             {
                 type: "azure_function",
-                function_tool: {
+                azureFunction: {
                     function: {
                         name: "GetWeather",
                         description: "Get the weather in a location.",
@@ -40,18 +42,18 @@ export async function initializeClient() {
                             required: ["location"],
                         },
                     },
-                    input_binding: {
+                    inputBinding: {
                         type: "storage_queue",
-                        storage_queue: {
-                            queue_service_uri: storageConnectionString,
-                            queue_name: inputQueueName,
+                        storageQueue: {
+                            queueServiceEndpoint: storageConnectionString,
+                            queueName: inputQueueName,
                         },
                     },
-                    output_binding: {
+                    outputBinding: {
                         type: "storage_queue",
-                        storage_queue: {
-                            queue_service_uri: storageConnectionString,
-                            queue_name: outputQueueName,
+                        storageQueue: {
+                            queueServiceEndpoint: storageConnectionString,
+                            queueName: outputQueueName,
                         },
                     },
                 },
