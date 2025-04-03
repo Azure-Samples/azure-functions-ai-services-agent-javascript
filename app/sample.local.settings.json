@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "PROJECT_CONNECTION_STRING": "",
+    "STORAGE_CONNECTION__queueServiceUri": ""
+  }
+}
