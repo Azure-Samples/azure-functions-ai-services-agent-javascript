@@ -1,7 +1,6 @@
 import type { InvocationContext } from "@azure/functions";
 import { app, output } from '@azure/functions';
 
-
 const inputQueueName = "input";
 const outputQueueName = "output";
 
@@ -15,6 +14,9 @@ interface ProcessedQueueItem {
     CorrelationId: string;
 }
 
+const temperatures = [60, 65, 70, 75, 80, 85];
+const descriptions = ["sunny", "cloudy", "rainy", "stormy", "windy"];
+
 const queueOutput = output.storageQueue({
     queueName: outputQueueName,
     connection: 'STORAGE_CONNECTION',
@@ -23,14 +25,17 @@ const queueOutput = output.storageQueue({
 export async function processQueueTrigger(queueItem: QueueItem, context: InvocationContext): Promise<ProcessedQueueItem> {
     context.log('Processing incoming queue item:', queueItem);
 
+    const randomTemp = temperatures[Math.floor(Math.random() * temperatures.length)];
+    const randomDescription = descriptions[Math.floor(Math.random() * descriptions.length)];
+
     return {
-        Value: 'Weather is 74 degrees and sunny in ' + queueItem.location,
+        Value: `${queueItem.location} weather is ${randomTemp} degrees and ${randomDescription}`,
         CorrelationId: queueItem.coorelationId,
     };
 }
 
 app.storageQueue('storageQueueTrigger1', {
-    queueName: inputQueueName, 
+    queueName: inputQueueName,
     connection: 'STORAGE_CONNECTION',
     extraOutputs: [queueOutput],
     handler: processQueueTrigger,
