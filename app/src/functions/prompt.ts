@@ -1,13 +1,11 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { initializeClient } from "../config/initialize";
 
 interface PromptRequestBody {
     prompt: string;
 }
 
-// HTTP trigger function
-export async function promptHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<void> {
-    context.log("HTTP trigger function processed a request.");
+export async function promptHttpTrigger(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+    context.log(`Http function processed request for url "${req.url}"`);
 
     let body: PromptRequestBody | undefined;
     if (req.body instanceof ReadableStream) {
@@ -28,15 +26,14 @@ export async function promptHttpTrigger(request: HttpRequest, context: Invocatio
     } else if (typeof req.body === "string") {
         body = JSON.parse(req.body) as PromptRequestBody;
     } else {
-        body = typeof req.body === "object" && "prompt" in req.body ? req.body as PromptRequestBody : undefined;
+        body = req.body && typeof req.body === "object" && "prompt" in req.body ? req.body as PromptRequestBody : undefined;
     }
 
-    if (!body?.prompt) {
-        context.res = {
+if (!body?.prompt) {
+       return {
             status: 400,
             body: "Please provide a 'prompt' in the request body."
         };
-        return;
     }
 
     const { projectClient, thread, agent } = await initializeClient();
@@ -61,11 +58,11 @@ export async function promptHttpTrigger(request: HttpRequest, context: Invocatio
     context.log(`Run finished with status: ${run.status}`);
 
     if (run.status === "failed") {
-        context.log.error(`Run failed: ${run.lastError}`);
+        context.error(`Run failed: ${run.lastError}`);
     }
 
     const messages = await projectClient.agents.getMessages(thread.id);
-    const lastMessage = messages.find((msg) => msg.sender === "assistant");
+    const lastMessage = messages.find((msg:any) => msg.sender === "assistant");
 
     if (lastMessage) {
         context.log(`Last Message: ${lastMessage.text?.value}`);
@@ -74,9 +71,12 @@ export async function promptHttpTrigger(request: HttpRequest, context: Invocatio
     await projectClient.agents.deleteAgent(agent.id);
     context.log("Deleted agent");
 
-    context.res = {
-        body: lastMessage?.text?.value || "No response from the assistant."
-    };
+
+    return { body: lastMessage?.text?.value || "No response from the assistant." };
 };
 
-export { prompt };
+app.http('httpTrigger1', {
+    methods: ['GET', 'POST'],
+    authLevel: 'anonymous',
+    handler: promptHttpTrigger
+});

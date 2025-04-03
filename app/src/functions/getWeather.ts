@@ -1,20 +1,37 @@
+import type { InvocationContext } from "@azure/functions";
+import { app, output } from '@azure/functions';
 
 
+const inputQueueName = "input";
+const outputQueueName = "output";
 
-import { app, InvocationContext } from '@azure/functions';
+interface QueueItem {
+    location: string;
+    coorelationId: string;
+}
 
-export async function storageQueueTrigger1(queueItem: unknown, context: InvocationContext): Promise<void> {
-    context.log('Storage queue function processed work item:', queueItem);
-    context.log('expirationTime =', context.triggerMetadata.expirationTime);
-    context.log('insertionTime =', context.triggerMetadata.insertionTime);
-    context.log('nextVisibleTime =', context.triggerMetadata.nextVisibleTime);
-    context.log('id =', context.triggerMetadata.id);
-    context.log('popReceipt =', context.triggerMetadata.popReceipt);
-    context.log('dequeueCount =', context.triggerMetadata.dequeueCount);
+interface ProcessedQueueItem {
+    Value: string;
+    CorrelationId: string;
+}
+
+const queueOutput = output.storageQueue({
+    queueName: outputQueueName,
+    connection: 'STORAGE_CONNECTION',
+});
+
+export async function processQueueTrigger(queueItem: QueueItem, context: InvocationContext): Promise<ProcessedQueueItem> {
+    context.log('Processing incoming queue item:', queueItem);
+
+    return {
+        Value: 'Weather is 74 degrees and sunny in ' + queueItem.location,
+        CorrelationId: queueItem.coorelationId,
+    };
 }
 
 app.storageQueue('storageQueueTrigger1', {
-    queueName: 'myqueue-items',
-    connection: 'MyStorageConnectionAppSetting',
-    handler: storageQueueTrigger1,
+    queueName: inputQueueName, 
+    connection: 'STORAGE_CONNECTION',
+    extraOutputs: [queueOutput],
+    handler: processQueueTrigger,
 });
