@@ -6,5 +6,5 @@ POST  {{host}}/api/prompt
 Content-Type: application/json
 
 {
-    "Prompt": "What is the weather in Tacoma, WA?"
+    "prompt": "What is the weather in Tacoma, WA?"
 }

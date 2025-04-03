@@ -6,7 +6,7 @@ interface PromptRequestBody {
 }
 
 export async function promptHttpTrigger(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${req.url}"`);
+    context.log(`HTTP "${req.url}"`);
 
     let body: PromptRequestBody | undefined;
     if (req.body instanceof ReadableStream) {
@@ -31,11 +31,14 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
     }
 
     if (!body?.prompt) {
+        context.log("No prompt provided in the request body.");
+
         return {
             status: 400,
             body: "Please provide a 'prompt' in the request body."
         };
     }
+    context.log(`HTTP body.prompt: ${body.prompt}`);
 
     const { projectClient, thread, agent } = await initializeClient();
 
@@ -80,7 +83,7 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
     return { body: lastMessageContent || "No response from the assistant." };
 };
 
-app.http('httpTrigger1', {
+app.http('prompt', {
     methods: ['GET', 'POST'],
     authLevel: 'anonymous',
     handler: promptHttpTrigger

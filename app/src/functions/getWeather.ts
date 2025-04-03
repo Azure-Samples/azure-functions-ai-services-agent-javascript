@@ -23,7 +23,7 @@ const queueOutput = output.storageQueue({
 });
 
 export async function processQueueTrigger(queueItem: QueueItem, context: InvocationContext): Promise<ProcessedQueueItem> {
-    context.log('Processing incoming queue item:', queueItem);
+    context.log('QUEUE:', queueItem);
 
     const randomTemp = temperatures[Math.floor(Math.random() * temperatures.length)];
     const randomDescription = descriptions[Math.floor(Math.random() * descriptions.length)];
