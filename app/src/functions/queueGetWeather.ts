@@ -1,15 +1,10 @@
 import type { InvocationContext } from "@azure/functions";
-import { app, output } from '@azure/functions';
-import { QueueClient, QueueServiceClient } from "@azure/storage-queue";
+import { app } from '@azure/functions';
+import { QueueClient } from "@azure/storage-queue";
 import { DefaultAzureCredential } from "@azure/identity";
 
 interface QueueItem {
     location: string;
-    CorrelationId: string;
-}
-
-interface ProcessedQueueItem {
-    Value: string;
     CorrelationId: string;
 }
 

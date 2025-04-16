@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { initializeClient } from "../init";
+import { initializeClient } from "../azureProjectInit";
 import type { MessageTextContentOutput } from "@azure/ai-projects";
 
 interface PromptRequestBody {
@@ -11,27 +11,7 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
 
     try {
 
-        let body: PromptRequestBody | undefined;
-        if (req.body instanceof ReadableStream) {
-            const reader = req.body.getReader();
-            const decoder = new TextDecoder();
-            const chunks: string[] = [];
-            let done = false;
-
-            while (!done) {
-                const { value, done: readerDone } = await reader.read();
-                done = readerDone;
-                if (value) {
-                    chunks.push(decoder.decode(value, { stream: !done }));
-                }
-            }
-
-            body = JSON.parse(chunks.join("")) as PromptRequestBody;
-        } else if (typeof req.body === "string") {
-            body = JSON.parse(req.body) as PromptRequestBody;
-        } else {
-            body = req.body && typeof req.body === "object" && "prompt" in req.body ? req.body as PromptRequestBody : undefined;
-        }
+        let body = await req.json() as PromptRequestBody;
 
         if (!body?.prompt) {
             context.log("No prompt provided in the request body.");
