@@ -4,13 +4,15 @@ import {
 import { DefaultAzureCredential } from "@azure/identity";
 import 'dotenv/config'
 
-const model = "gpt-4o-mini"
-const inputQueueName = "input";
-const outputQueueName = "output";
-const projectConnectionString = process.env.PROJECT_CONNECTION_STRING as string;
-const storageConnectionString = process.env.STORAGE_CONNECTION__queueServiceUri as string;
 
 export async function initializeClient() {
+
+    const model = "gpt-4o-mini"
+    const inputQueueName = "input";
+    const outputQueueName = "output";
+    const projectConnectionString = process.env.PROJECT_CONNECTION_STRING as string;
+    const storageConnectionString = process.env.STORAGE_CONNECTION__queueServiceUri as string;
+    
 
     const projectClient = AIProjectsClient.fromConnectionString(
         projectConnectionString || "",
