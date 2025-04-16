@@ -2,20 +2,20 @@ import {
     AIProjectsClient
 } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
-import 'dotenv/config'
-
 
 export async function initializeClient() {
 
     const model = "gpt-4o-mini"
-    const inputQueueName = "input";
-    const outputQueueName = "output";
+
     const projectConnectionString = process.env.PROJECT_CONNECTION_STRING as string;
     const storageConnectionString = process.env.STORAGE_CONNECTION__queueServiceUri as string;
     
+    if(!projectConnectionString){
+        throw new Error("projectConnectionString is empty");
+    }
 
     const projectClient = AIProjectsClient.fromConnectionString(
-        projectConnectionString || "",
+        projectConnectionString,
         new DefaultAzureCredential(),
     );
 
@@ -45,14 +45,14 @@ export async function initializeClient() {
                         type: "storage_queue",
                         storageQueue: {
                             queueServiceEndpoint: storageConnectionString,
-                            queueName: inputQueueName,
+                            queueName: "input",
                         },
                     },
                     outputBinding: {
                         type: "storage_queue",
                         storageQueue: {
                             queueServiceEndpoint: storageConnectionString,
-                            queueName: outputQueueName,
+                            queueName: "output",
                         },
                     },
                 },

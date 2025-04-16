@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: azure-functions-ai-services-agent-python
+name: azure-functions-ai-services-agent-javascript
 metadata:
-  template: azure-functions-ai-services-agent-python
+  template: azure-functions-ai-services-agent-javascript
 services:
   api:
     project: ./app/
-    language: typescript
+    language: js
     host: function
 hooks:
   postprovision:

@@ -100,6 +100,15 @@ You can run the `azd up` command as many times as you need to both provision you
 >[!NOTE]
 >Deployed code files are always overwritten by the latest deployment package.
 
+## Use API with cURL
+
+```
+curl -X http://localhost:7071/api/prompt \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "What is the weather in Tacoma, WA?"}' \
+  --verbose
+```
+
 ## Clean up resources
 
 When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs (--purge does not leave a soft delete of AI resource and recovers your quota):
