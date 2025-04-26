@@ -1,9 +1,14 @@
 import {
     AIProjectsClient
 } from "@azure/ai-projects";
+import type { AgentThreadOutput, AgentOutput } from "@azure/ai-projects";
 import { DefaultAzureCredential } from "@azure/identity";
 
-export async function initializeClient() {
+// <CreateAgent>
+export async function initializeClient():Promise<{
+    projectClient: AIProjectsClient,
+    agent: AgentOutput
+}> {
 
     const model = "gpt-4o-mini"
 
@@ -62,8 +67,16 @@ export async function initializeClient() {
 
     console.log(`Created agent, agent ID: ${agent.id}`);
 
+    return { projectClient, agent };
+}
+// </CreateAgent>
+
+// <CreateThread>
+export async function getThread(projectClient: AIProjectsClient):Promise<AgentThreadOutput>{
+
     const thread = await projectClient.agents.createThread();
     console.log(`Created thread, thread ID: ${thread.id}`);
 
-    return { projectClient, thread, agent };
-}
+    return thread;
+} 
+// </CreateThread>
