@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { initializeClient } from "../azureProjectInit";
+import { initializeClient, getThread } from "../azureProjectInit";
 import type { MessageTextContentOutput } from "@azure/ai-projects";
 
 interface PromptRequestBody {
@@ -23,8 +23,10 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
         }
         context.log(`HTTP body.prompt: ${body.prompt}`);
 
-        const { projectClient, thread, agent } = await initializeClient();
+        const { projectClient, agent } = await initializeClient();
+        const thread = await getThread(projectClient);
 
+        // <CreateMessage>
         const message = await projectClient.agents.createMessage(
             thread.id,
             {
@@ -46,11 +48,13 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
         }
 
         context.log(`Run finished with status: ${run.status}`);
+        // </CreateMessage>
 
         if (run.status === "failed") {
             context.error(`Run failed: ${run.lastError}`);
         }
 
+        // <ListMessages>
         const { data: messages } = await projectClient.agents.listMessages(thread.id);
 
         context.log(`Messages received: ${messages.length}`);
@@ -66,6 +70,7 @@ export async function promptHttpTrigger(req: HttpRequest, context: InvocationCon
 
         await projectClient.agents.deleteAgent(agent.id);
         context.log("Deleted agent");
+        // </ListMessages>
 
         const result = { body: responseText || "No response from the assistant." };
         context.log(`PROMPT Result: ${JSON.stringify(result)}`);
